@@ -3,8 +3,6 @@ import { JsonToTable } from 'react-json-to-table';
 
 import '../App.css';
 
-var update = require('immutability-helper');
-
 class Bank extends Component {
   state = {
     base: 'EUR',
@@ -104,18 +102,12 @@ class Bank extends Component {
     const filtered = userBalances.filter(function(userBalances) {
       return userBalances.value !== 0;
     });
+    console.log(filtered);
     return filtered;
   };
 
   buy = i => {
-    const {
-      amount,
-      userBalances,
-      exchangeTo,
-      base,
-      result,
-      value
-    } = this.state;
+    const { amount, userBalances, exchangeTo, base, result } = this.state;
 
     if (amount === isNaN) {
       return;
@@ -238,7 +230,7 @@ class Bank extends Component {
                   >
                     {' '}
                     {userHave
-                      .filter(x => x != this.state.base)
+                      .filter(x => x !== this.state.base)
                       .map(x => (
                         <option key={x} value={x}>
                           {' '}
