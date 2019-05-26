@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { JsonToTable } from 'react-json-to-table';
 
 import '../App.css';
 
@@ -7,7 +8,7 @@ class Bank extends Component {
     base: 'EUR',
     rate: '',
     amount: '',
-    result: '',
+    result: '0',
     commission: '0.0',
     exchangeTo: 'USD',
     currencies: [
@@ -46,11 +47,11 @@ class Bank extends Component {
       'EUR'
     ],
     userBalances: [
-      {
-        USD: 1000
-      },
-      { EUR: 1000 },
-      { TRY: 0 }
+      { type: 'USD', value: 1000 },
+      { type: 'EUR', value: 1000 },
+      { type: 'TRY', value: 0 },
+      { type: 'CAD', value: 200 },
+      { type: 'ABC', value: 0 }
     ]
   };
 
@@ -58,13 +59,13 @@ class Bank extends Component {
     const { show } = this.state;
     this.setState({ show: !show });
   };
+
   handleSelect = e => {
     this.setState(
       {
         [e.target.name]: e.target.value
       },
-      this.calculate,
-      this.checkBalance
+      this.calculate
     );
   };
 
@@ -114,64 +115,78 @@ class Bank extends Component {
     }
   };
 
-  deleteZero = () => {};
-
-  showTable = () => {
-    const userBalances = this.state;
-    let result = '<table>';
-    for (const i = 0; i < userBalances.length; i++) {
-      result += (
-        <tr>
-          <td> ${userBalances[i]} </td>
-        </tr>
-      );
-    }
-  };
-
-  checkBalance = () => {
-    console.log(Object.values(this.state.userBalances));
-  };
-
-  buyButton = e => {
-    this.setState(
-      {
-        amount: e.target.value
-      },
-      this.buy
-    );
+  deleteZero = userBalances => {
+    const filtered = userBalances.filter(function(userBalances) {
+      return userBalances.value !== 0;
+    });
+    console.log(filtered);
+    return filtered;
   };
 
   buy = () => {
-    const { amount } = this.state;
+    const {
+      amount,
+      userBalances,
+      exchangeTo,
+      currencies,
+      base,
+      result
+    } = this.state;
     if (amount === isNaN) {
       return;
     } else {
-      this.setState({});
+      if (
+        amount > 0 &&
+        // result <= userBalances.value &&
+        base !== exchangeTo
+      ) {
+        userBalances.push({ type: base, value: Number(amount) });
+      } else {
+      }
     }
   };
+
+  // buyButton = e => {
+  //   this.setState(
+  //     {
+  //       amount: e.target.value
+  //     },
+  //     this.buy
+  //   );
+  // };
+
   render() {
     const {
       commission,
-      userBalances,
       currencies,
       amount,
       result,
       base,
       exchangeTo
     } = this.state;
+    const values = this.deleteZero(this.state.userBalances);
+    console.log(values);
+    const userHave = values.map(({ type }) => type);
+    console.log(userHave);
     return (
       <div>
         <div className='container3'>
           <h1>BANK</h1>
           <div>
             <div>
-              <button className='bankButton button3' onClick={this.toggleDiv}>
+              {/* <button className='bankButton button3' onClick={this.toggleDiv}>
                 Show Balances
               </button>
               <br />
+              <div>
+                {this.state.show && 'User Balance ='}
 
-              {this.state.show && `User Balance =  + ${this.showTable}`}
-
+                <br />
+              </div> */}
+              <div onClick={this.buy}>
+                {' '}
+                User Balance {<JsonToTable json={values} />}
+              </div>
               <br />
               <div>
                 <label className='payText1'>You Will Get</label>
@@ -210,7 +225,11 @@ class Bank extends Component {
             <span>
               <div>
                 <form>
-                  <input className='input2' disabled={true} value={result} />
+                  <input
+                    className='input2'
+                    disabled={true}
+                    value={this.state.result}
+                  />
 
                   <select
                     id='soflow2'
@@ -218,9 +237,9 @@ class Bank extends Component {
                     value={exchangeTo}
                     onChange={this.handleSelect}
                   >
-                    {currencies.map(currency => (
-                      <option key={currency} value={currency}>
-                        {currency}
+                    {userHave.map(userHave => (
+                      <option key={userHave} value={userHave}>
+                        {userHave}
                       </option>
                     ))}
                   </select>
@@ -235,7 +254,6 @@ class Bank extends Component {
                     <input
                       className='input3'
                       disabled={true}
-                      placeholder='hey:'
                       value={'Commission*: ' + commission + ' ' + base}
                     />
                   </form>
@@ -245,7 +263,13 @@ class Bank extends Component {
           </div>
           <div>
             <br />
-            <button className='buyButton' onClick={this.buy}>
+
+            <button
+              type='button'
+              value='Submit'
+              className='buyButton'
+              onClick={this.buy}
+            >
               Buy
             </button>
           </div>
