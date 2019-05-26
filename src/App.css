@@ -122,7 +122,7 @@ body {
   align-items: center;
   background-color: #108ae0;
   margin: auto;
-  height: 250px;
+  height: auto;
   padding: 30px;
   position: relative;
   border-radius: 10px;
@@ -135,7 +135,7 @@ body {
   background-color: #01319f;
   color: white;
   margin: auto;
-  height: 700px;
+  height: auto;
   padding: 30px;
   position: relative;
   border-radius: 10px;

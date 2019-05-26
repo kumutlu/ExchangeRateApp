@@ -51,7 +51,6 @@ class Converter extends Component {
       .then(res => res.json())
       .then(data => {
         const rate = data.rates[this.state.convertTo].toFixed(2);
-        console.log(rate);
         const date = data.date;
         this.setState({
           rate,
