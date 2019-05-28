@@ -46,7 +46,6 @@ class Bank extends Component {
       'SEK',
       'EUR'
     ],
-    sourceCurrencyType: '',
     userBalances: [
       {
         type: 'USD',
@@ -102,11 +101,12 @@ class Bank extends Component {
     const filtered = userBalances.filter(function(userBalances) {
       return userBalances.value !== 0;
     });
-    console.log(filtered);
+    // console.log(filtered);
     return filtered;
   };
 
-  buy = i => {
+  buy = e => {
+    e.preventDefault();
     const { amount, userBalances, exchangeTo, base, result } = this.state;
 
     if (amount === isNaN) {
@@ -121,6 +121,43 @@ class Bank extends Component {
       alert('Please Enter Positive Number');
       return;
     }
+
+    const destinationBalance = userBalances.filter(x => x.type === base)[0];
+    console.log(destinationBalance);
+
+    if (destinationBalance) {
+      this.setState({
+        userBalances: [
+          {
+            type: base,
+            value:
+              Number(amount) +
+              userBalances.filter(x => x.type === base)[0].value
+          }
+        ]
+      });
+      console.log(userBalances.filter(x => x.type === base)[0].value);
+      console.log(result);
+    } else {
+      // userBalances.push({
+      //   type: base,
+      //   value: Number(amount)
+      // });
+      // this.setState({
+      //   userBalances
+      // });
+      this.setState({
+        userBalances: [
+          {
+            type: base,
+            value: Number(amount)
+          }
+        ]
+      });
+
+      // userBalances.push({"type": base, "value": Number(amount)})
+    }
+
     this.setState(prevState => ({
       userBalances: [
         ...prevState.userBalances,
@@ -132,45 +169,15 @@ class Bank extends Component {
         }
       ]
     }));
-
-    const destinationBalance = userBalances.filter(x => x.type === base)[0];
-    if (destinationBalance) {
-      this.setState(prevState => ({
-        userBalances: [
-          ...prevState.userBalances,
-          {
-            type: base,
-            value:
-              Number(amount) +
-              userBalances.filter(x => x.type === base)[0].value
-          }
-        ]
-      }));
-
-      // this.setState({
-      //   userBalances: this.state.userBalances.map(el =>
-      //     el.type === base ? Object.assign({}, el, { value }) : el
-      //   )
-      // });
-    } else {
-      this.setState(prevState => ({
-        userBalances: [
-          ...prevState.userBalances,
-          {
-            type: base,
-            value: Number(amount)
-          }
-        ]
-      }));
-    }
+    console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
   };
 
   render() {
     const { commission, currencies, amount, base, exchangeTo } = this.state;
     const values = this.deleteZero(this.state.userBalances);
-    console.log(values);
+    // console.log(values);
     const userHave = values.map(({ type }) => type);
-    console.log(userHave);
+    // console.log(userHave);
     return (
       <div>
         <div className='container3'>
