@@ -105,6 +105,21 @@ class Bank extends Component {
     return filtered;
   };
 
+  // buy = () => {
+  //   const { userBalances, base, amount } = this.state;
+  //   const destinationBalance = userBalances.filter(x => x.type === base)[0];
+  //   console.log(destinationBalance);
+
+  //   if (destinationBalance) {
+  //     this.setState({
+  //       userBalances: (userBalances[destinationBalance] = base)
+  //     });
+  //   } else {
+  //     this.setState({
+  //       userBalances: userBalances.push({ type: base, value: Number(amount) })
+  //     });
+  //   }
+  // };
   buy = e => {
     e.preventDefault();
     const { amount, userBalances, exchangeTo, base, result } = this.state;
@@ -112,7 +127,7 @@ class Bank extends Component {
     if (amount === isNaN) {
       return;
     }
-    console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
+    // console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
     if (result > userBalances.filter(x => x.type === exchangeTo)[0].value) {
       alert('Insufficent Balance');
       return;
@@ -122,54 +137,58 @@ class Bank extends Component {
       return;
     }
 
-    const destinationBalance = userBalances.filter(x => x.type === base)[0];
+    const destinationBalance = userBalances.find(x => x.type === base);
     console.log(destinationBalance);
+    const newBalances = userBalances.map(balance => {
+      console.log(balance);
+      if (balance.type === base) {
+        return {
+          type: base,
+          value: Number(amount) + userBalances.find(x => x.type === base).value
+        };
+      }
+      if (balance.type === exchangeTo) {
+        return {
+          type: exchangeTo,
+          value:
+            userBalances.find(x => x.type === exchangeTo).value - Number(result)
+        };
+      }
+    });
 
     if (destinationBalance) {
       this.setState({
-        userBalances: [
-          {
-            type: base,
-            value:
-              Number(amount) +
-              userBalances.filter(x => x.type === base)[0].value
-          }
-        ]
+        userBalances: newBalances
       });
-      console.log(userBalances.filter(x => x.type === base)[0].value);
-      console.log(result);
+      // console.log(userBalances.filter(x => x.type === base)[0].value);
+      // console.log(result);
     } else {
-      // userBalances.push({
-      //   type: base,
-      //   value: Number(amount)
-      // });
-      // this.setState({
-      //   userBalances
-      // });
       this.setState({
         userBalances: [
+          ...userBalances,
           {
             type: base,
             value: Number(amount)
           }
         ]
+        // userBalances: userBalances.push({ type: base, value: Number(amount) })
       });
 
-      // userBalances.push({"type": base, "value": Number(amount)})
+      //
     }
 
-    this.setState(prevState => ({
-      userBalances: [
-        ...prevState.userBalances,
-        {
-          type: exchangeTo,
-          value:
-            userBalances.filter(x => x.type === exchangeTo)[0].value -
-            Number(result)
-        }
-      ]
-    }));
-    console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
+    // this.setState(prev => ({
+    //   userBalances: [
+    //     ...prev.userBalances,
+    //     {
+    //       type: exchangeTo,
+    //       value:
+    //         userBalances.filter(x => x.type === exchangeTo)[0].value -
+    //         Number(result)
+    //     }
+    //   ]
+    // }));
+    // console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
   };
 
   render() {
