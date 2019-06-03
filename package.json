@@ -4,9 +4,11 @@
   "private": true,
   "dependencies": {
     "axios": "^0.18.0",
+    "immutability-helper": "^3.0.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-json-to-table": "^0.1.5",
     "react-number-format": "^4.0.8",
     "react-script": "^2.0.5",
     "react-scripts": "3.0.1"

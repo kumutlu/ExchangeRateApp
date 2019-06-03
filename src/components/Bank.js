@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { JsonToTable } from 'react-json-to-table';
 
 import '../App.css';
 
@@ -7,7 +8,7 @@ class Bank extends Component {
     base: 'EUR',
     rate: '',
     amount: '',
-    result: '',
+    result: '0',
     commission: '0.0',
     exchangeTo: 'USD',
     currencies: [
@@ -47,24 +48,19 @@ class Bank extends Component {
     ],
     userBalances: [
       {
-        USD: 1000
-      },
-      { EUR: 1000 },
-      { TRY: 0 }
+        type: 'USD',
+        value: 1000
+      }
     ]
   };
 
-  toggleDiv = () => {
-    const { show } = this.state;
-    this.setState({ show: !show });
-  };
   handleSelect = e => {
     this.setState(
       {
         [e.target.name]: e.target.value
       },
-      this.calculate,
-      this.checkBalance
+
+      this.calculate
     );
   };
 
@@ -72,19 +68,6 @@ class Bank extends Component {
     this.setState(
       {
         amount: e.target.value
-      },
-      this.calculate
-    );
-  };
-
-  handleSwap = e => {
-    const base = this.state.base;
-    const exchangeTo = this.state.exchangeTo;
-    e.preventDefault();
-    this.setState(
-      {
-        exchangeTo: base,
-        base: exchangeTo
       },
       this.calculate
     );
@@ -114,73 +97,102 @@ class Bank extends Component {
     }
   };
 
-  deleteZero = () => {};
-
-  showTable = () => {
-    const userBalances = this.state;
-    let result = '<table>';
-    for (const i = 0; i < userBalances.length; i++) {
-      result += (
-        <tr>
-          <td> ${userBalances[i]} </td>
-        </tr>
-      );
-    }
+  deleteZero = userBalances => {
+    const filtered = userBalances.filter(function(userBalances) {
+      return userBalances.value !== 0;
+    });
+    // console.log(filtered);
+    return filtered;
   };
 
-  checkBalance = () => {
-    console.log(Object.values(this.state.userBalances));
-  };
+  buy = e => {
+    e.preventDefault();
+    const { amount, userBalances, exchangeTo, base, result } = this.state;
 
-  buyButton = e => {
-    this.setState(
-      {
-        amount: e.target.value
-      },
-      this.buy
-    );
-  };
-
-  buy = () => {
-    const { amount } = this.state;
     if (amount === isNaN) {
       return;
-    } else {
-      this.setState({});
     }
+    console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
+    if (result > userBalances.filter(x => x.type === exchangeTo)[0].value) {
+      alert('Insufficent Balance');
+      return;
+    }
+    if (amount <= 0) {
+      alert('Please Enter Positive Number');
+      return;
+    }
+
+    const destinationBalance = userBalances.filter(x => x.type === base)[0];
+    console.log(destinationBalance);
+
+    if (destinationBalance) {
+      this.setState({
+        userBalances: [
+          {
+            type: base,
+            value:
+              Number(amount) +
+              userBalances.filter(x => x.type === base)[0].value
+          }
+        ]
+      });
+      console.log(userBalances.filter(x => x.type === base)[0].value);
+      console.log(result);
+    } else {
+      // userBalances.push({
+      //   type: base,
+      //   value: Number(amount)
+      // });
+      // this.setState({
+      //   userBalances
+      // });
+      this.setState({
+        userBalances: [
+          {
+            type: base,
+            value: Number(amount)
+          }
+        ]
+      });
+
+      // userBalances.push({"type": base, "value": Number(amount)})
+    }
+
+    this.setState(prevState => ({
+      userBalances: [
+        ...prevState.userBalances,
+        {
+          type: exchangeTo,
+          value:
+            userBalances.filter(x => x.type === exchangeTo)[0].value -
+            Number(result)
+        }
+      ]
+    }));
+    console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
   };
+
   render() {
-    const {
-      commission,
-      userBalances,
-      currencies,
-      amount,
-      result,
-      base,
-      exchangeTo
-    } = this.state;
+    const { commission, currencies, amount, base, exchangeTo } = this.state;
+    const values = this.deleteZero(this.state.userBalances);
+    // console.log(values);
+    const userHave = values.map(({ type }) => type);
+    // console.log(userHave);
     return (
       <div>
         <div className='container3'>
-          <h1>BANK</h1>
+          <h1> BANK </h1>{' '}
           <div>
             <div>
-              <button className='bankButton button3' onClick={this.toggleDiv}>
-                Show Balances
-              </button>
-              <br />
-
-              {this.state.show && `User Balance =  + ${this.showTable}`}
-
-              <br />
+              <div> User Balance {<JsonToTable json={values} />} </div> <br />
               <div>
-                <label className='payText1'>You Will Get</label>
-                <label className='payText2'>You Will Pay</label>
-              </div>
+                <label className='payText1'> You Will Get </label>{' '}
+                <label className='payText2'> You Will Pay </label>{' '}
+              </div>{' '}
               <br />
               <br />
-            </div>
-          </div>
+            </div>{' '}
+          </div>{' '}
           <div>
             <span>
               <div>
@@ -191,43 +203,51 @@ class Bank extends Component {
                     placeholder='0'
                     value={amount}
                     onChange={this.handleInput}
-                  />
+                  />{' '}
                   <select
                     id='soflow1'
                     name='base'
                     value={base}
                     onChange={this.handleSelect}
                   >
+                    {' '}
                     {currencies.map(currency => (
                       <option key={currency} value={currency}>
-                        {currency}
+                        {' '}
+                        {currency}{' '}
                       </option>
-                    ))}
-                  </select>
-                </form>
-              </div>
-            </span>
+                    ))}{' '}
+                  </select>{' '}
+                </form>{' '}
+              </div>{' '}
+            </span>{' '}
             <span>
               <div>
                 <form>
-                  <input className='input2' disabled={true} value={result} />
-
+                  <input
+                    className='input2'
+                    disabled={true}
+                    value={this.state.result}
+                  />
                   <select
                     id='soflow2'
                     name='exchangeTo'
                     value={exchangeTo}
                     onChange={this.handleSelect}
                   >
-                    {currencies.map(currency => (
-                      <option key={currency} value={currency}>
-                        {currency}
-                      </option>
-                    ))}
-                  </select>
-                </form>
-              </div>
+                    {' '}
+                    {userHave
+                      .filter(x => x !== this.state.base)
+                      .map(x => (
+                        <option key={x} value={x}>
+                          {' '}
+                          {x}{' '}
+                        </option>
+                      ))}{' '}
+                  </select>{' '}
+                </form>{' '}
+              </div>{' '}
             </span>
-
             <div>
               <span>
                 <div>
@@ -235,24 +255,27 @@ class Bank extends Component {
                     <input
                       className='input3'
                       disabled={true}
-                      placeholder='hey:'
                       value={'Commission*: ' + commission + ' ' + base}
-                    />
-                  </form>
-                </div>
-              </span>
-            </div>
-          </div>
+                    />{' '}
+                  </form>{' '}
+                </div>{' '}
+              </span>{' '}
+            </div>{' '}
+          </div>{' '}
           <div>
             <br />
-            <button className='buyButton' onClick={this.buy}>
-              Buy
-            </button>
-          </div>
+            <button
+              type='button'
+              value='Submit'
+              className='buyButton'
+              onClick={this.buy}
+            >
+              Buy{' '}
+            </button>{' '}
+          </div>{' '}
           <br />
-
-          <div>*Commission Rate is 1%</div>
-        </div>
+          <div> * Commission Rate is 1 % </div>{' '}
+        </div>{' '}
       </div>
     );
   }
