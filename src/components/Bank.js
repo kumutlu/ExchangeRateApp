@@ -112,8 +112,8 @@ class Bank extends Component {
     if (amount === isNaN) {
       return;
     }
-    console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
-    if (result > userBalances.filter(x => x.type === exchangeTo)[0].value) {
+    // console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
+    if (result > userBalances.find(x => x.type === exchangeTo).value) {
       alert('Insufficent Balance');
       return;
     }
@@ -122,54 +122,67 @@ class Bank extends Component {
       return;
     }
 
-    const destinationBalance = userBalances.filter(x => x.type === base)[0];
-    console.log(destinationBalance);
+    // I made this thing into a function, we could take it out to different file if needed.
+    const updateBalances = (
+      currentBalances,
+      baseCurrency,
+      exchangeToCurrency,
+      amount,
+      result
+    ) => {
+      const destinationBalance = currentBalances.find(
+        x => x.type === baseCurrency
+      );
+      let balancesToUpdate;
 
-    if (destinationBalance) {
-      this.setState({
-        userBalances: [
+      // 1.)
+      // If we don 't have the destination currency, add it and start it at 0
+      if (!destinationBalance) {
+        balancesToUpdate = [
+          ...currentBalances,
           {
-            type: base,
-            value:
-              Number(amount) +
-              userBalances.filter(x => x.type === base)[0].value
+            type: baseCurrency,
+            value: 0
           }
-        ]
-      });
-      console.log(userBalances.filter(x => x.type === base)[0].value);
-      console.log(result);
-    } else {
-      // userBalances.push({
-      //   type: base,
-      //   value: Number(amount)
-      // });
-      // this.setState({
-      //   userBalances
-      // });
-      this.setState({
-        userBalances: [
-          {
-            type: base,
-            value: Number(amount)
-          }
-        ]
-      });
+        ];
+      } else {
+        // if we already have the the currencies involved, we don't do anything
+        balancesToUpdate = currentBalances;
+      }
 
-      // userBalances.push({"type": base, "value": Number(amount)})
-    }
-
-    this.setState(prevState => ({
-      userBalances: [
-        ...prevState.userBalances,
-        {
-          type: exchangeTo,
-          value:
-            userBalances.filter(x => x.type === exchangeTo)[0].value -
-            Number(result)
+      // 2.)
+      return balancesToUpdate.map(balance => {
+        // this balance is the base currency, update object by adding the amount
+        if (balance.type === baseCurrency) {
+          return {
+            type: baseCurrency,
+            value: Number(amount) + balance.value
+          };
         }
-      ]
-    }));
-    console.log(userBalances.filter(x => x.type === exchangeTo)[0].value);
+
+        // this balance is the exchangeToCurrenct, update the object by subtracting the amount
+        if (balance.type === exchangeToCurrency) {
+          return {
+            type: exchangeToCurrency,
+            value: balance.value - Number(result)
+          };
+        }
+
+        // this is a different currency that has nothing to do with this transaction
+        // do nothing
+        return balance;
+      });
+    };
+
+    this.setState({
+      userBalances: updateBalances(
+        userBalances,
+        base,
+        exchangeTo,
+        amount,
+        result
+      )
+    });
   };
 
   render() {
