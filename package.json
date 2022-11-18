@@ -11,7 +11,7 @@
     "react-json-to-table": "^0.1.5",
     "react-number-format": "^4.0.8",
     "react-script": "^2.0.5",
-    "react-scripts": "3.0.1"
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
